@@ -1,10 +1,5 @@
 package org.psyduck.portfolio.components
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -14,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import org.psyduck.portfolio.theme.PortfolioColors.TextMuted
 import org.psyduck.portfolio.theme.rememberJetBrainsMono
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -22,7 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
 // 0 → "whoami" typewriter running, cursor blinking
 // 1 → greeting appears
 // 2 → "fastfetch" + FastfetchSection appear
-// 3 → FastfetchSection done → scroll hint appears with blinking cursor
+// 3 → "Explore my resume" appears
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -46,18 +40,6 @@ fun IntroSequence(
             onReadyToShowNav()
         }
     }
-
-    // Blinking animation for the scroll hint
-    val infiniteTransition = rememberInfiniteTransition(label = "blink")
-    val blinkAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "blinkAlpha"
-    )
 
     val mono = rememberJetBrainsMono()
 
@@ -114,14 +96,20 @@ fun IntroSequence(
             )
         }
 
-        // ── Stage 3: Blinking scroll hint ─────────────────────────────────────
+        // ── Stage 3: Explore my resume ─────────────────────────────────────
         if (stage >= 3) {
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = "↓ Scroll to explore ↓",
-                color = TextMuted.copy(alpha = blinkAlpha),
-                fontFamily = mono
-            )
+            if (skipAnimation) {
+                Text(
+                    text = "Om@Portfolio:~$ Explore my resume ▋",
+                    color = Color.Green,
+                    fontFamily = mono
+                )
+            } else {
+                TypeWriterText(
+                    fullText = "Explore my resume",
+                    showCursor = true
+                )
+            }
         }
     }
 }

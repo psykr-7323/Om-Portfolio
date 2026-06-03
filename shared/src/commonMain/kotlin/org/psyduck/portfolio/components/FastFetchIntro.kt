@@ -41,13 +41,6 @@ fun FastfetchSection(
     // ── Full-width info column (DotLogo removed) ─────────────────────────────
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        // Header
-        Text(
-            text = "Om@Portfolio",
-            color = Success,
-            fontFamily = mono
-        )
-
         Spacer(Modifier.height(8.dp))
 
         HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)

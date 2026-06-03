@@ -8,11 +8,6 @@ data class FastFetchInfo(
 val terminalInfo = listOf(
 
     FastFetchInfo(
-        "Name",
-        "Om Anand"
-    ),
-
-    FastFetchInfo(
         "Role",
         "Android & Kotlin Developer"
     ),
@@ -30,6 +25,11 @@ val terminalInfo = listOf(
     FastFetchInfo(
         "Uptime",
         "3rd Year · CGPA 8.7"
+    ),
+
+    FastFetchInfo(
+        "Data / ML",
+        "Pandas · NumPy · Scikit-learn · Streamlit · Excel · PowerBI · Tableau"
     ),
 
     FastFetchInfo(

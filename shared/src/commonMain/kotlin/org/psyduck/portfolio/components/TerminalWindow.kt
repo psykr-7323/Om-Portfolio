@@ -46,7 +46,7 @@ fun TerminalSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.78f)
-                .fillMaxHeight(0.88f)
+                .wrapContentHeight()
                 .clip(terminalShape)
                 .background(
                     Brush.verticalGradient(
