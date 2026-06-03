@@ -43,7 +43,6 @@ fun NavBar(
     visible: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val mono = rememberJetBrainsMono()
     var selected by remember { mutableStateOf("/") }
 
     val navShape = RoundedCornerShape(14.dp)
@@ -105,7 +104,6 @@ fun NavBar(
                 ) {
                     Text(
                         text = item.label,
-                        fontFamily = mono,
                         fontSize = 13.sp,
                         fontWeight = if (isSelected) FontWeight.W700 else FontWeight.W400,
                         color = if (isSelected) Color.White else TextSecondary,

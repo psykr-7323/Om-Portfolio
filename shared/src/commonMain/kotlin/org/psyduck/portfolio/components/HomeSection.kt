@@ -15,16 +15,14 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import om_portfolio.shared.generated.resources.Res
 import om_portfolio.shared.generated.resources.om_avatar
 import org.jetbrains.compose.resources.painterResource
-import org.psyduck.portfolio.models.ProjectStatus
+import org.psyduck.portfolio.models.ProjectInfo
 import org.psyduck.portfolio.models.projects
-import org.psyduck.portfolio.theme.PortfolioColors
 import org.psyduck.portfolio.theme.PortfolioColors.Blue400
 import org.psyduck.portfolio.theme.PortfolioColors.Border
 import org.psyduck.portfolio.theme.PortfolioColors.Pink500
@@ -32,7 +30,6 @@ import org.psyduck.portfolio.theme.PortfolioColors.Purple500
 import org.psyduck.portfolio.theme.PortfolioColors.TextMuted
 import org.psyduck.portfolio.theme.PortfolioColors.TextPrimary
 import org.psyduck.portfolio.theme.PortfolioColors.TextSecondary
-import org.psyduck.portfolio.theme.rememberJetBrainsMono
 
 // ── Skill Badge Data ─────────────────────────────────────────────────────────
 
@@ -59,7 +56,6 @@ private val hashtags = listOf(
 
 @Composable
 fun HomeSection(modifier: Modifier = Modifier) {
-    val mono = rememberJetBrainsMono()
     var selectedProjectIndex by remember { mutableStateOf(0) }
 
     Column(
@@ -90,9 +86,8 @@ fun HomeSection(modifier: Modifier = Modifier) {
                 // Tagline
                 Text(
                     text = "Kotlin-first. Android-native. Backend-ready.",
-                    fontFamily = mono,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.W700,
+                    fontWeight = FontWeight.W800,
                     color = TextPrimary,
                     lineHeight = 28.sp
                 )
@@ -105,8 +100,7 @@ fun HomeSection(modifier: Modifier = Modifier) {
                             "building production-grade Android apps and backend systems with Kotlin.\n\n" +
                             "I care about clean architecture, real-time systems, and solving " +
                             "problems that matter — from mental wellness to 5G research.",
-                    fontFamily = mono,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     color = TextSecondary,
                     lineHeight = 22.sp
                 )
@@ -131,7 +125,6 @@ fun HomeSection(modifier: Modifier = Modifier) {
                 ) {
                     Text(
                         text = badge.label,
-                        fontFamily = mono,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.W600,
                         color = badge.color
@@ -145,13 +138,12 @@ fun HomeSection(modifier: Modifier = Modifier) {
         // ── Hashtags ─────────────────────────────────────────────────────────
         Text(
             text = hashtags.joinToString("  "),
-            fontFamily = mono,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
             color = TextMuted,
             lineHeight = 20.sp
         )
 
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(48.dp))
 
         // ── Project Cards Slider ─────────────────────────────────────────────
         val scrollState = rememberScrollState()
@@ -160,29 +152,27 @@ fun HomeSection(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(scrollState),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Leading spacer for centering
-            Spacer(Modifier.width(60.dp))
+            // Leading spacer for centering visual padding
+            Spacer(Modifier.width(24.dp))
 
             projects.forEachIndexed { index, project ->
                 val isFocused = index == selectedProjectIndex
                 val scale by animateFloatAsState(
-                    targetValue = if (isFocused) 1f else 0.78f,
+                    targetValue = if (isFocused) 1f else 0.88f,
                     animationSpec = tween(300),
                     label = "cardScale"
                 )
                 val alpha by animateFloatAsState(
-                    targetValue = if (isFocused) 1f else 0.6f,
+                    targetValue = if (isFocused) 1f else 0.5f,
                     animationSpec = tween(300),
                     label = "cardAlpha"
                 )
 
                 ProjectCard(
-                    name = project.name,
-                    status = project.status,
-                    isFocused = isFocused,
+                    project = project,
                     scale = scale,
                     alpha = alpha,
                     onClick = { selectedProjectIndex = index }
@@ -192,97 +182,8 @@ fun HomeSection(modifier: Modifier = Modifier) {
             // Trailing spacer
             Spacer(Modifier.width(60.dp))
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        // ── Project Info Box ─────────────────────────────────────────────────
-        val selectedProject = projects[selectedProjectIndex]
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF11131A).copy(alpha = 0.70f),
-                            Color(0xFF090B11).copy(alpha = 0.60f)
-                        )
-                    )
-                )
-                .border(1.dp, Border, RoundedCornerShape(14.dp))
-                .padding(24.dp)
-        ) {
-            // Project name
-            Text(
-                text = selectedProject.name,
-                fontFamily = mono,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W700,
-                color = TextPrimary
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            // Description
-            Text(
-                text = selectedProject.description,
-                fontFamily = mono,
-                fontSize = 13.sp,
-                color = TextSecondary,
-                lineHeight = 22.sp
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            // Buttons row
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // More button
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Purple500.copy(alpha = 0.25f), Blue400.copy(alpha = 0.20f))
-                            )
-                        )
-                        .border(1.dp, Purple500.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                        .clickable { /* Navigate to project detail page - future */ }
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "More",
-                        fontFamily = mono,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.W600,
-                        color = TextPrimary
-                    )
-                }
-
-                // GitHub button
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.08f))
-                        .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                        .clickable {
-                            kotlinx.browser.window.open(selectedProject.githubUrl, "_blank")
-                        }
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "GitHub",
-                        fontFamily = mono,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.W600,
-                        color = TextPrimary
-                    )
-                }
-            }
-        }
+        
+        Spacer(Modifier.height(48.dp))
     }
 }
 
@@ -290,97 +191,137 @@ fun HomeSection(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ProjectCard(
-    name: String,
-    status: ProjectStatus,
-    isFocused: Boolean,
+    project: ProjectInfo,
     scale: Float,
     alpha: Float,
     onClick: () -> Unit
 ) {
-    val mono = rememberJetBrainsMono()
-    val cardShape = RoundedCornerShape(14.dp)
+    val cardShape = RoundedCornerShape(16.dp)
 
     Column(
         modifier = Modifier
             .scale(scale)
-            .width(if (isFocused) 200.dp else 200.dp)   // same base width, scale handles size
+            .width(360.dp)
             .clip(cardShape)
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF15172A).copy(alpha = alpha),
-                        Color(0xFF0D0F1A).copy(alpha = alpha)
-                    )
-                )
-            )
-            .border(
-                width = if (isFocused) 1.5.dp else 1.dp,
-                color = if (isFocused) Purple500.copy(alpha = 0.6f)
-                else Color.White.copy(alpha = 0.12f),
-                shape = cardShape
-            )
+            .background(Color(0xFF1E2128).copy(alpha = alpha))
+            .border(1.dp, Color.White.copy(alpha = 0.08f * alpha), cardShape)
             .clickable { onClick() }
-            .padding(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Placeholder image area
+        // Top section: Gradient cover
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .height(160.dp)
                 .background(
                     Brush.linearGradient(
                         listOf(
-                            Purple500.copy(alpha = 0.12f),
-                            Blue400.copy(alpha = 0.08f),
-                            Pink500.copy(alpha = 0.10f)
+                            Purple500.copy(alpha = 0.8f * alpha),
+                            Blue400.copy(alpha = 0.6f * alpha),
+                            Pink500.copy(alpha = 0.7f * alpha)
                         )
                     )
-                )
-                .border(1.dp, Border, RoundedCornerShape(10.dp)),
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = name.first().toString(),
-                fontFamily = mono,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.W700,
-                color = Color.White.copy(alpha = 0.3f)
+                text = project.name.first().toString(),
+                fontSize = 64.sp,
+                fontWeight = FontWeight.W800,
+                color = Color.White.copy(alpha = 0.7f * alpha)
             )
         }
 
-        Spacer(Modifier.height(12.dp))
-
-        // Project name
-        Text(
-            text = name,
-            fontFamily = mono,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.W600,
-            color = Color.White.copy(alpha = alpha),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Spacer(Modifier.height(6.dp))
-
-        // Status dot + label
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
+        // Bottom section: Content
+        Column(
+            modifier = Modifier.padding(24.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(status.color, CircleShape)
-            )
+            // Status row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(modifier = Modifier.size(8.dp).background(project.status.color.copy(alpha = alpha), CircleShape))
+                Text(
+                    text = project.status.label,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.W600,
+                    color = project.status.color.copy(alpha = alpha)
+                )
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // Title
             Text(
-                text = status.label,
-                fontFamily = mono,
-                fontSize = 11.sp,
-                color = status.color.copy(alpha = alpha)
+                text = project.name,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.W700,
+                color = TextPrimary.copy(alpha = alpha),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+
+            Spacer(Modifier.height(10.dp))
+
+            // Description
+            Text(
+                text = project.description,
+                fontSize = 14.sp,
+                color = TextSecondary.copy(alpha = alpha),
+                lineHeight = 22.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.height(72.dp) // Fixed height to keep cards uniform
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            // Buttons row
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // More button
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    Purple500.copy(alpha = 0.25f * alpha),
+                                    Blue400.copy(alpha = 0.20f * alpha)
+                                )
+                            )
+                        )
+                        .border(1.dp, Purple500.copy(alpha = 0.4f * alpha), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = "More",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W600,
+                        color = TextPrimary.copy(alpha = alpha)
+                    )
+                }
+
+                // GitHub button
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.08f * alpha))
+                        .border(1.dp, Color.White.copy(alpha = 0.2f * alpha), RoundedCornerShape(8.dp))
+                        .clickable(enabled = alpha == 1f) {
+                            kotlinx.browser.window.open(project.githubUrl, "_blank")
+                        }
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = "GitHub",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W600,
+                        color = TextPrimary.copy(alpha = alpha)
+                    )
+                }
+            }
         }
     }
 }
