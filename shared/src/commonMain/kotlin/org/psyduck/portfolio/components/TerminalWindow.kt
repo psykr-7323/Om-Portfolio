@@ -44,8 +44,8 @@ fun TerminalSection(
 
         Column(
             modifier = Modifier
-                .widthIn(max = 680.dp)
-                .fillMaxWidth(0.9f)
+                .widthIn(max = 760.dp)
+                .fillMaxWidth(0.92f)
                 .height(560.dp)
                 .clip(terminalShape)
                 .background(
@@ -68,22 +68,22 @@ fun TerminalSection(
                     .fillMaxWidth()
                     .height(42.dp)
                     .background(Color.Black)
-                    .padding(4.dp),
-                contentAlignment = Alignment.CenterStart
+                    .padding(horizontal = 14.dp),
+                contentAlignment = Alignment.Center
             ) {
+                // Window controls on the left
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .background(Color.Black)
+                    modifier = Modifier.align(Alignment.CenterStart)
                 ) {
                     Box(Modifier.size(12.dp).background(Purple600, CircleShape))
                     Box(Modifier.size(12.dp).background(Blue600, CircleShape))
                     Box(Modifier.size(12.dp).background(Pink600, CircleShape))
-                    Spacer(Modifier.width(400.dp))
-                    Text("~/Portfolio", color = TextSecondary, fontWeight = FontWeight.W800)
                 }
+                
+                // Title perfectly centered
+                Text("~/Portfolio", color = TextSecondary, fontWeight = FontWeight.W800)
             }
 
             HorizontalDivider(thickness = 1.dp, color = Color.White.copy(alpha = 0.25f))

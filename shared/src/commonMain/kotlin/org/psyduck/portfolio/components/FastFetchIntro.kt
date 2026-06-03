@@ -41,10 +41,6 @@ fun FastfetchSection(
     // ── Full-width info column (DotLogo removed) ─────────────────────────────
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        Spacer(Modifier.height(8.dp))
-
-        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)
-
         Spacer(Modifier.height(12.dp))
 
         // Staggered rows
@@ -76,10 +72,5 @@ fun FastfetchSection(
             Spacer(Modifier.height(10.dp))
         }
 
-        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)
-
-        Spacer(Modifier.height(14.dp))
-
-        FastfetchColors()
     }
 }

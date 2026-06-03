@@ -9,8 +9,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,58 +50,63 @@ fun App() {
             // Main scrollable content with snap fling behavior
             val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
             
-            LazyColumn(
-                state = listState,
-                flingBehavior = flingBehavior,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // ── Section 1: Terminal (exactly 1 viewport height) ──────────
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillParentMaxHeight()
-                    ) {
-                        // Animated background is ONLY shown in the terminal section now
-                        AnimatedBackground()
-                        
-                        TerminalSection(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-
-                        // Blinking scroll hint outside the terminal at bottom center
-                        val infiniteTransition = rememberInfiniteTransition(label = "blink")
-                        val blinkAlpha by infiniteTransition.animateFloat(
-                            initialValue = 1f,
-                            targetValue = 0.2f,
-                            animationSpec = infiniteRepeatable(
-                                animation = tween(800),
-                                repeatMode = RepeatMode.Reverse
-                            ),
-                            label = "blinkAlpha"
-                        )
-
-                        Text(
-                            text = "↓ Scroll to explore ↓",
-                            color = TextMuted.copy(alpha = blinkAlpha),
-                            fontFamily = rememberJetBrainsMono(),
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val screenHeight = maxHeight
+                
+                LazyColumn(
+                    state = listState,
+                    flingBehavior = flingBehavior,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // ── Section 1: Terminal (exactly 1 viewport height) ──────────
+                    item {
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 32.dp)
-                        )
-                    }
-                }
+                                .fillMaxWidth()
+                                .height(screenHeight)
+                        ) {
+                            // Animated background is ONLY shown in the terminal section now
+                            AnimatedBackground()
+                            
+                            TerminalSection(
+                                modifier = Modifier.align(Alignment.Center)
+                            )
 
-                // ── Section 2: Home ──────────────────────────────────────────
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Background) // Dark background without stars
-                    ) {
-                        HomeSection(
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                            // Blinking scroll hint outside the terminal at bottom center
+                            val infiniteTransition = rememberInfiniteTransition(label = "blink")
+                            val blinkAlpha by infiniteTransition.animateFloat(
+                                initialValue = 1f,
+                                targetValue = 0.2f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(800),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "blinkAlpha"
+                            )
+
+                            Text(
+                                text = "↓ Scroll to explore ↓",
+                                color = TextMuted.copy(alpha = blinkAlpha),
+                                fontFamily = rememberJetBrainsMono(),
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 32.dp)
+                            )
+                        }
+                    }
+
+                    // ── Section 2: Home ──────────────────────────────────────────
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = screenHeight) // Ensures it's AT LEAST full height
+                                .background(Background) // Dark background without stars
+                        ) {
+                            HomeSection(
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
