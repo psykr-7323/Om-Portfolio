@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.psyduck.portfolio.components.AnimatedBackground
 import org.psyduck.portfolio.components.Terminal
-import org.psyduck.portfolio.components.TypeWriterText
 
 @Composable
 fun App() {

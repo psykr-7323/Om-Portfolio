@@ -33,6 +33,21 @@ val PinkGradient = Brush.linearGradient(
     )
 )
 
+// Brighter versions for the DotLogo so OA is vivid against the dark background
+val PinkGradientBright = Brush.linearGradient(
+    colors = listOf(
+        PortfolioColors.Pink500,  // Hot pink at top
+        PortfolioColors.Pink300   // Soft blush at bottom
+    )
+)
+
+val PurpleGradientBright = Brush.linearGradient(
+    colors = listOf(
+        PortfolioColors.Purple400,  // Bright lavender at top
+        PortfolioColors.Purple300   // Light violet at bottom
+    )
+)
+
 val TerminalBorderGradient = Brush.linearGradient(
     colors = listOf(
         PortfolioColors.Purple500,

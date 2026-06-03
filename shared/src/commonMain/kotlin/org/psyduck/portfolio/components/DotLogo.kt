@@ -9,16 +9,25 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.psyduck.portfolio.theme.PortfolioGradients.PinkGradient
-import org.psyduck.portfolio.theme.PortfolioGradients.PurpleGradient
+import org.psyduck.portfolio.theme.PortfolioGradients.PinkGradientBright
+import org.psyduck.portfolio.theme.PortfolioGradients.PurpleGradientBright
 import org.psyduck.portfolio.theme.rememberJetBrainsMono
+
+// ─── DotLogo ────────────────────────────────────────────────────────────────
+//
+// O: circular, 12 lines, max width 30 chars
+// A: triangular peak → crossbar → spreading legs, 12 lines, max width 25 chars
+//    (A is naturally narrower than O — that is correct for the letterform)
+//
+// Font: 13sp / lineHeight 16sp → 12 lines ≈ 192sp height
+// This matches 6 fastfetch rows at (20sp text + 12dp spacer) each.
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun DotLogo() {
     val mono = rememberJetBrainsMono()
 
-    // 12 lines high, wider curves
+    // 12 lines — O shape (circular, symmetric)
     val o = """
            ............
          ................
@@ -34,46 +43,44 @@ fun DotLogo() {
            ............
     """.trimIndent()
 
-    // 12 lines high, matches the weight of the 'O'
+    // 12 lines — A shape (peak at top, crossbar in middle, legs spread at bottom)
+    // Each line is correctly sized: peak narrow, crossbar solid, legs wide.
     val a = """
-               ......
-              ........
-             ..........
-            ....    ....
-           ....      ....
-          ....        ....
-         ..................
-        ....................
-       ....              ....
-      ....                ....
-     ....                  ....
-    ....                    ....
+            ....
+           ......
+          ........
+         ....  ....
+        ....    ....
+       ....      ....
+      ................
+     ..................
+    ....            ....
+   ....              ....
+  ....                ....
+ ....                  ....
     """.trimIndent()
 
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp), // Increased spacing between letters
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.Top
     ) {
-
         Text(
             text = o,
             style = TextStyle(
-                brush = PinkGradient,
+                brush = PinkGradientBright,
                 fontFamily = mono,
-                fontSize = 10.sp,     // Bumped up slightly for clarity
-                lineHeight = 12.sp,   // Important: Line height > font size prevents vertical squishing
-                letterSpacing = 1.sp  // Gives the dots some horizontal breathing room
+                fontSize = 13.sp,
+                lineHeight = 16.sp,
             )
         )
 
         Text(
             text = a,
             style = TextStyle(
-                brush = PurpleGradient,
+                brush = PurpleGradientBright,
                 fontFamily = mono,
-                fontSize = 10.sp,
-                lineHeight = 12.sp,
-                letterSpacing = 1.sp
+                fontSize = 13.sp,
+                lineHeight = 16.sp,
             )
         )
     }

@@ -14,38 +14,27 @@ val terminalInfo = listOf(
 
     FastFetchInfo(
         "Role",
-        "Android Developer"
-    ),
-
-    FastFetchInfo(
-        "Backend",
-        "Backend Developer"
-    ),
-
-    FastFetchInfo(
-        "Data",
-        "Data Analyst"
+        "Android & Backend Developer"
     ),
 
     FastFetchInfo(
         "Stack",
-        "Kotlin • Compose"
-    ),
-
-    FastFetchInfo(
-        "Database",
-        "PostgreSQL • H2"
+        "Kotlin • Jetpack Compose • Ktor"
     ),
 
     FastFetchInfo(
         "Projects",
-        "ThunderChat • Graviton"
+        "ThunderChat • Graviton • eUdyaan"
     ),
 
     FastFetchInfo(
         "Research",
-        "ML + DASH + 5G"
+        "ML-Based DASH Adaptation in 5G"
+    ),
 
+    FastFetchInfo(
+        "Education",
+        "B.Tech CS — KIIT (CGPA 8.69)"
     )
 
 )

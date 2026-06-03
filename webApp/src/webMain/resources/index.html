@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Om-Portfolio</title>
+    <meta name="description" content="Om Anand — Android & Backend Developer. Kotlin, Jetpack Compose, Ktor. Portfolio built with Compose Multiplatform.">
+    <meta name="theme-color" content="#09090C">
+    <title>Om Anand | Portfolio</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link type="text/css" rel="stylesheet" href="styles.css">
 </head>
 <body style="text-align: center; align-content: center">
@@ -16,5 +19,25 @@
     </circle>
 </svg>
 <script type="application/javascript" src="webApp.js"></script>
+
+<!-- Firebase Analytics (loaded after app to not block rendering) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAnalytics }  from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+
+    // TODO: Replace with your Firebase project config from Firebase Console
+    const firebaseConfig = {
+        apiKey:            "AIzaSyB6-DSVn8WMRAObRFfPpI1wiNgXcZoowLY",
+        authDomain:        "om-portfolio-7323.firebaseapp.com",
+        projectId:         "om-portfolio-7323",
+        storageBucket:     "om-portfolio-7323.firebasestorage.app",
+        messagingSenderId: "962302298929",
+        appId:             "1:962302298929:web:50dc311a1fb442a5d6be10",
+        measurementId:     "G-B8EMHHZQSM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+</script>
 </body>
 </html>
