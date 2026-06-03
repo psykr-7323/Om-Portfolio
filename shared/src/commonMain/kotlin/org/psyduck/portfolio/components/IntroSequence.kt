@@ -100,13 +100,13 @@ fun IntroSequence(
         if (stage >= 3) {
             if (skipAnimation) {
                 Text(
-                    text = "Om@Portfolio:~$ Explore my resume ▋",
+                    text = "Om@Portfolio:~$ Explore my Portfolio ▋",
                     color = Color.Green,
                     fontFamily = mono
                 )
             } else {
                 TypeWriterText(
-                    fullText = "Explore my resume",
+                    fullText = "Explore my Portfolio",
                     showCursor = true
                 )
             }

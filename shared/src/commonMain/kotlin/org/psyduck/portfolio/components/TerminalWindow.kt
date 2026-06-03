@@ -24,16 +24,17 @@ import org.psyduck.portfolio.theme.PortfolioColors.TextSecondary
 
 @Composable
 fun TerminalSection(
+    skipAnimation: Boolean = false,
+    onFinished: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val terminalShape = RoundedCornerShape(18.dp)
     val scrollState = rememberScrollState()
 
     // Skip animations if user scrolls during the intro
-    var skipAnimation by remember { mutableStateOf(false) }
     LaunchedEffect(scrollState.value) {
         if (scrollState.value > 0 && !skipAnimation) {
-            skipAnimation = true
+            onFinished()
         }
     }
 
@@ -95,7 +96,8 @@ fun TerminalSection(
                     .padding(22.dp)
             ) {
                 IntroSequence(
-                    skipAnimation = skipAnimation
+                    skipAnimation = skipAnimation,
+                    onReadyToShowNav = onFinished
                 )
             }
         }

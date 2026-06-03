@@ -22,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,9 @@ fun App() {
         val showNav by remember {
             derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 400 }
         }
+
+        // Lock terminal animation so it doesn't replay on scroll back up
+        var isTerminalAnimationDone by remember { mutableStateOf(false) }
 
         Box(Modifier.fillMaxSize()) {
             
@@ -69,6 +74,8 @@ fun App() {
                             AnimatedBackground()
                             
                             TerminalSection(
+                                skipAnimation = isTerminalAnimationDone,
+                                onFinished = { isTerminalAnimationDone = true },
                                 modifier = Modifier.align(Alignment.Center)
                             )
 
