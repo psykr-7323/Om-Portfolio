@@ -9,91 +9,84 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import org.psyduck.portfolio.models.terminalInfo
 import org.psyduck.portfolio.theme.PortfolioColors.Blue400
 import org.psyduck.portfolio.theme.PortfolioColors.Border
 import org.psyduck.portfolio.theme.PortfolioColors.Success
 import org.psyduck.portfolio.theme.rememberJetBrainsMono
-import kotlin.time.Duration.Companion.milliseconds
 
 // Fires once every row has appeared so IntroSequence can advance to stage 3.
 @Composable
-fun FastfetchSection(onFinished: () -> Unit = {}) {
+fun FastfetchSection(
+    skipAnimation: Boolean = false,
+    onFinished: () -> Unit = {}
+) {
 
-    var visibleItems by remember { mutableStateOf(0) }
+    var visibleItems by remember { mutableStateOf(if (skipAnimation) terminalInfo.size else 0) }
     val mono = rememberJetBrainsMono()
 
-    LaunchedEffect(Unit) {
-        terminalInfo.forEach {
-            delay(220.milliseconds)   // slightly faster stagger to keep it snappy
-            visibleItems++
+    LaunchedEffect(skipAnimation) {
+        if (skipAnimation) {
+            visibleItems = terminalInfo.size
+            onFinished()
+        } else {
+            terminalInfo.forEachIndexed { index, _ ->
+                kotlinx.coroutines.delay(180)   // slightly faster stagger
+                visibleItems = index + 1
+            }
+            onFinished()
         }
-        onFinished()
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
+    // ── Full-width info column (DotLogo removed) ─────────────────────────────
+    Column(modifier = Modifier.fillMaxWidth()) {
 
-        // ── LEFT: OA Dot Logo ────────────────────────────────────────────────
-        Box(modifier = Modifier.weight(0.40f)) {
-            DotLogo()
-        }
+        // Header
+        Text(
+            text = "Om@Portfolio",
+            color = Success,
+            fontFamily = mono
+        )
 
-        Spacer(Modifier.width(15.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // ── RIGHT: Info column ───────────────────────────────────────────────
-        Column(modifier = Modifier.weight(0.60f)) {
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)
 
-            // Header
-            Text(
-                text = "Om@Portfolio",
-                color = Success,
-                fontFamily = mono
-            )
+        Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(8.dp))
+        // Staggered rows
+        repeat(visibleItems) { index ->
+            val item = terminalInfo[index]
 
-            HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)
-
-            Spacer(Modifier.height(12.dp))
-
-            // Staggered rows
-            repeat(visibleItems) { index ->
-                val item = terminalInfo[index]
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    // KEY — Blue
-                    Text(
-                        text = "${item.label}:",
-                        color = Blue400,
-                        fontFamily = mono,
-                        modifier = Modifier.width(110.dp)
-                    )
-                    // VALUE — White
-                    Text(
-                        text = item.value,
-                        color = Color.White,
-                        fontFamily = mono,
-                        softWrap = true,
-                        overflow = TextOverflow.Visible,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(Modifier.height(12.dp))   // tighter than 16dp → saves vertical space
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                // KEY — Blue
+                Text(
+                    text = "${item.label}:",
+                    color = Blue400,
+                    fontFamily = mono,
+                    modifier = Modifier.width(110.dp)
+                )
+                // VALUE — White
+                Text(
+                    text = item.value,
+                    color = Color.White,
+                    fontFamily = mono,
+                    softWrap = true,
+                    overflow = TextOverflow.Visible,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
-            HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)
-
-            Spacer(Modifier.height(14.dp))
-
-            FastfetchColors()
+            Spacer(Modifier.height(10.dp))
         }
+
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Border)
+
+        Spacer(Modifier.height(14.dp))
+
+        FastfetchColors()
     }
 }

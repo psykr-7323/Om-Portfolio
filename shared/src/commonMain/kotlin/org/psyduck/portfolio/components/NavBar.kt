@@ -33,8 +33,6 @@ private data class NavItem(val label: String, val route: String)
 private val navItems = listOf(
     NavItem("Home",       "/"),
     NavItem("Projects",   "/projects"),
-    NavItem("Resume",     "/resume"),
-    NavItem("About Me",   "/about"),
     NavItem("Contact",    "/contact")
 )
 

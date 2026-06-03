@@ -23,11 +23,19 @@ import org.psyduck.portfolio.theme.PortfolioColors.Purple600
 import org.psyduck.portfolio.theme.PortfolioColors.TextSecondary
 
 @Composable
-fun Terminal(
+fun TerminalSection(
     modifier: Modifier = Modifier
 ) {
     val terminalShape = RoundedCornerShape(18.dp)
-    var showNav by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+
+    // Skip animations if user scrolls during the intro
+    var skipAnimation by remember { mutableStateOf(false) }
+    LaunchedEffect(scrollState.value) {
+        if (scrollState.value > 0 && !skipAnimation) {
+            skipAnimation = true
+        }
+    }
 
     Box(
         modifier = modifier.fillMaxSize(),
@@ -35,13 +43,10 @@ fun Terminal(
     ) {
 
         // ── Terminal card ─────────────────────────────────────────────────────
-        // fillMaxHeight(0.88f) instead of a fixed 560dp:
-        // this adapts to the screen so all content fits without scrolling
-        // on typical desktop/tablet displays.
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.78f)
-                .fillMaxHeight(0.88f)           // adaptive — no more hard 560dp ceiling
+                .fillMaxHeight(0.88f)
                 .clip(terminalShape)
                 .background(
                     Brush.verticalGradient(
@@ -83,25 +88,16 @@ fun Terminal(
 
             HorizontalDivider(thickness = 1.dp, color = Color.White.copy(alpha = 0.25f))
 
-            // Content — verticalScroll kept as fallback on very small displays,
-            // but on normal desktop it will fit without scrolling.
+            // Content area
             Column(
                 modifier = Modifier
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(22.dp)
             ) {
                 IntroSequence(
-                    onReadyToShowNav = { showNav = true }
+                    skipAnimation = skipAnimation
                 )
             }
         }
-
-        // ── NavBar (top-right, slides in after Explore more!) ─────────────────
-        NavBar(
-            visible = showNav,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 16.dp, end = 24.dp)
-        )
     }
 }
