@@ -14,18 +14,23 @@ import org.psyduck.portfolio.theme.rememberJetBrainsMono
 @Composable
 fun TypeWriterText(
     fullText: String,
-    showCursor : Boolean = true
+    showCursor : Boolean = true,
+    skipAnimation: Boolean = false
 ) {
     val mono = rememberJetBrainsMono()
 
-    var displayedText by remember { mutableStateOf("") }
+    var displayedText by remember(fullText, skipAnimation) { 
+        mutableStateOf(if (skipAnimation) fullText else "") 
+    }
     var blink by remember { mutableStateOf(true) }
 
-    LaunchedEffect(fullText) {
-        displayedText = ""
-        fullText.forEach {
-            displayedText += it
-            delay(120)
+    if (!skipAnimation) {
+        LaunchedEffect(fullText) {
+            displayedText = ""
+            fullText.forEach {
+                displayedText += it
+                delay(120)
+            }
         }
     }
 

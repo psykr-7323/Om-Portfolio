@@ -98,18 +98,11 @@ fun IntroSequence(
 
         // ── Stage 3: Explore my resume ─────────────────────────────────────
         if (stage >= 3) {
-            if (skipAnimation) {
-                Text(
-                    text = "Om@Portfolio:~$ Explore my Portfolio ▋",
-                    color = Color.Green,
-                    fontFamily = mono
-                )
-            } else {
-                TypeWriterText(
-                    fullText = "Explore my Portfolio",
-                    showCursor = true
-                )
-            }
+            TypeWriterText(
+                fullText = "Explore my Portfolio",
+                showCursor = true,
+                skipAnimation = skipAnimation
+            )
         }
     }
 }
