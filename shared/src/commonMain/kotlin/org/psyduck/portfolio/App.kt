@@ -5,15 +5,15 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,38 +27,41 @@ import org.psyduck.portfolio.components.AnimatedBackground
 import org.psyduck.portfolio.components.HomeSection
 import org.psyduck.portfolio.components.NavBar
 import org.psyduck.portfolio.components.TerminalSection
+import org.psyduck.portfolio.theme.PortfolioColors.Background
 import org.psyduck.portfolio.theme.PortfolioColors.TextMuted
 import org.psyduck.portfolio.theme.rememberJetBrainsMono
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun App() {
     MaterialTheme {
-        val scrollState = rememberScrollState()
+        val listState = rememberLazyListState()
 
-        // Show NavBar when user has scrolled past ~400px of the first viewport
+        // Show NavBar when user has scrolled down (index > 0 or offset > 400)
         val showNav by remember {
-            derivedStateOf { scrollState.value > 400 }
+            derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 400 }
         }
 
         Box(Modifier.fillMaxSize()) {
-            // Animated background covers everything
-            AnimatedBackground()
-
-            // Main scrollable content
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val screenHeight = maxHeight
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                ) {
-                    // ── Section 1: Terminal (exactly 1 viewport height) ──────────
+            
+            // Main scrollable content with snap fling behavior
+            val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+            
+            LazyColumn(
+                state = listState,
+                flingBehavior = flingBehavior,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // ── Section 1: Terminal (exactly 1 viewport height) ──────────
+                item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(screenHeight)
+                            .fillParentMaxHeight()
                     ) {
+                        // Animated background is ONLY shown in the terminal section now
+                        AnimatedBackground()
+                        
                         TerminalSection(
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -84,11 +87,19 @@ fun App() {
                                 .padding(bottom = 32.dp)
                         )
                     }
+                }
 
-                    // ── Section 2: Home ──────────────────────────────────────────
-                    HomeSection(
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                // ── Section 2: Home ──────────────────────────────────────────
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Background) // Dark background without stars
+                    ) {
+                        HomeSection(
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
 

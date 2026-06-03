@@ -42,11 +42,11 @@ fun TerminalSection(
         contentAlignment = Alignment.Center
     ) {
 
-        // ── Terminal card ─────────────────────────────────────────────────────
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.78f)
-                .wrapContentHeight()
+                .widthIn(max = 680.dp)
+                .fillMaxWidth(0.9f)
+                .height(560.dp)
                 .clip(terminalShape)
                 .background(
                     Brush.verticalGradient(
