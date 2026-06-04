@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import om_portfolio.shared.generated.resources.Res
 import om_portfolio.shared.generated.resources.om_avatar
 import org.jetbrains.compose.resources.painterResource
@@ -52,11 +54,36 @@ private val hashtags = listOf(
     "#cleanarchitecture", "#websockets", "#5g", "#ml", "#jetpackcompose"
 )
 
+// ── Contact Link Data ────────────────────────────────────────────────────────
+
+private data class ContactLink(val label: String, val url: String, val color: Color)
+
+private val contactLinks = listOf(
+    ContactLink("GitHub", "https://github.com/psykr-7323", Color(0xFFE6EDF3)),
+    ContactLink("Email", "mailto:omanand1208@gmail.com", Color(0xFF22C55E)),
+    ContactLink("LinkedIn", "https://linkedin.com/in/om-anand", Color(0xFF0A66C2))
+)
+
 // ── Home Section ─────────────────────────────────────────────────────────────
 
 @Composable
 fun HomeSection(modifier: Modifier = Modifier) {
     var selectedProjectIndex by remember { mutableStateOf(0) }
+    val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Auto-scroll cards every 10 seconds, resets on manual interaction
+    LaunchedEffect(selectedProjectIndex) {
+        delay(10_000)
+        selectedProjectIndex = (selectedProjectIndex + 1) % projects.size
+    }
+
+    // Programmatically scroll the row to follow the selected card
+    LaunchedEffect(selectedProjectIndex) {
+        val cardWidthPx = 384 // ~360.dp card + 24.dp spacing in pixels (approximate)
+        val targetScroll = (selectedProjectIndex * cardWidthPx).coerceAtLeast(0)
+        scrollState.animateScrollTo(targetScroll)
+    }
 
     Column(
         modifier = modifier
@@ -107,6 +134,42 @@ fun HomeSection(modifier: Modifier = Modifier) {
             }
         }
 
+        Spacer(Modifier.height(24.dp))
+
+        // ── Contact Links ────────────────────────────────────────────────────
+        Text(
+            text = "You can find me on",
+            fontSize = 13.sp,
+            color = TextMuted
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            contactLinks.forEach { link ->
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(link.color.copy(alpha = 0.12f))
+                        .border(1.dp, link.color.copy(alpha = 0.35f), RoundedCornerShape(20.dp))
+                        .clickable {
+                            kotlinx.browser.window.open(link.url, "_blank")
+                        }
+                        .padding(horizontal = 18.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "${link.label} ↗",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.W600,
+                        color = link.color
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(28.dp))
 
         // ── Skill Badges ─────────────────────────────────────────────────────
@@ -145,45 +208,116 @@ fun HomeSection(modifier: Modifier = Modifier) {
 
         Spacer(Modifier.height(48.dp))
 
-        // ── Project Cards Slider ─────────────────────────────────────────────
-        val scrollState = rememberScrollState()
-
+        // ── "Projects I Build" Heading ───────────────────────────────────────
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(scrollState),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Leading spacer for centering visual padding
-            Spacer(Modifier.width(24.dp))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(Border)
+            )
+            Text(
+                text = "  Projects I Build  ",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W700,
+                color = TextPrimary
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(Border)
+            )
+        }
 
-            projects.forEachIndexed { index, project ->
-                val isFocused = index == selectedProjectIndex
-                val scale by animateFloatAsState(
-                    targetValue = if (isFocused) 1f else 0.88f,
-                    animationSpec = tween(300),
-                    label = "cardScale"
-                )
-                val alpha by animateFloatAsState(
-                    targetValue = if (isFocused) 1f else 0.5f,
-                    animationSpec = tween(300),
-                    label = "cardAlpha"
-                )
+        Spacer(Modifier.height(32.dp))
 
-                ProjectCard(
-                    project = project,
-                    scale = scale,
-                    alpha = alpha,
-                    onClick = { selectedProjectIndex = index }
+        // ── Project Cards Slider with Arrows ─────────────────────────────────
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // Card slider Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(scrollState)
+                    .padding(horizontal = 40.dp), // leave room for arrows
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Leading spacer
+                Spacer(Modifier.width(24.dp))
+
+                projects.forEachIndexed { index, project ->
+                    val isFocused = index == selectedProjectIndex
+                    val scale by animateFloatAsState(
+                        targetValue = if (isFocused) 1f else 0.88f,
+                        animationSpec = tween(300),
+                        label = "cardScale"
+                    )
+                    val alpha by animateFloatAsState(
+                        targetValue = if (isFocused) 1f else 0.5f,
+                        animationSpec = tween(300),
+                        label = "cardAlpha"
+                    )
+
+                    ProjectCard(
+                        project = project,
+                        scale = scale,
+                        alpha = alpha,
+                        onClick = { selectedProjectIndex = index }
+                    )
+                }
+
+                // Trailing spacer
+                Spacer(Modifier.width(24.dp))
+            }
+
+            // Left arrow
+            val canGoLeft = selectedProjectIndex > 0
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF1E2128).copy(alpha = if (canGoLeft) 0.9f else 0.3f))
+                    .border(1.dp, Color.White.copy(alpha = if (canGoLeft) 0.2f else 0.06f), CircleShape)
+                    .clickable(enabled = canGoLeft) {
+                        selectedProjectIndex = (selectedProjectIndex - 1).coerceAtLeast(0)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "◀",
+                    fontSize = 18.sp,
+                    color = if (canGoLeft) TextPrimary else TextMuted.copy(alpha = 0.3f)
                 )
             }
 
-            // Trailing spacer
-            Spacer(Modifier.width(60.dp))
+            // Right arrow
+            val canGoRight = selectedProjectIndex < projects.lastIndex
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF1E2128).copy(alpha = if (canGoRight) 0.9f else 0.3f))
+                    .border(1.dp, Color.White.copy(alpha = if (canGoRight) 0.2f else 0.06f), CircleShape)
+                    .clickable(enabled = canGoRight) {
+                        selectedProjectIndex = (selectedProjectIndex + 1).coerceAtMost(projects.lastIndex)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "▶",
+                    fontSize = 18.sp,
+                    color = if (canGoRight) TextPrimary else TextMuted.copy(alpha = 0.3f)
+                )
+            }
         }
-        
-        Spacer(Modifier.height(48.dp))
     }
 }
 

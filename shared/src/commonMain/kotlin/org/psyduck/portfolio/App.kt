@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.psyduck.portfolio.components.AnimatedBackground
 import org.psyduck.portfolio.components.HomeSection
-import org.psyduck.portfolio.components.NavBar
 import org.psyduck.portfolio.components.TerminalSection
 import org.psyduck.portfolio.theme.PortfolioColors.Background
 import org.psyduck.portfolio.theme.PortfolioColors.TextMuted
@@ -41,11 +39,6 @@ import org.psyduck.portfolio.theme.rememberJetBrainsMono
 fun App() {
     MaterialTheme {
         val listState = rememberLazyListState()
-
-        // Show NavBar when user has scrolled down (index > 0 or offset > 400)
-        val showNav by remember {
-            derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 400 }
-        }
 
         // Lock terminal animation so it doesn't replay on scroll back up
         var isTerminalAnimationDone by remember { mutableStateOf(false) }
@@ -117,14 +110,6 @@ fun App() {
                     }
                 }
             }
-
-            // ── NavBar (top-right, appears on scroll) ────────────────────────
-            NavBar(
-                visible = showNav,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 24.dp)
-            )
         }
     }
 }
