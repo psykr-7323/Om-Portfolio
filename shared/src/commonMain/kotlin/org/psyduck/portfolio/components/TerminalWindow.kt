@@ -21,6 +21,7 @@ import org.psyduck.portfolio.theme.PortfolioColors.Blue600
 import org.psyduck.portfolio.theme.PortfolioColors.Pink600
 import org.psyduck.portfolio.theme.PortfolioColors.Purple600
 import org.psyduck.portfolio.theme.PortfolioColors.TextSecondary
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun TerminalSection(
@@ -38,16 +39,44 @@ fun TerminalSection(
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        val screenW = maxWidth
+        val screenH = maxHeight
+        val isCompact = screenW < 600.dp
 
+        // ── Fixed-width terminal (like a real terminal window) ───────────
+        // On desktop/laptop: a generous fixed width that looks like a proper terminal
+        // On mobile: near-full width
+        val terminalWidth = when {
+            isCompact          -> screenW * 0.94f   // phone: near-full width
+            screenW >= 1200.dp -> 700.dp            // large desktop
+            screenW >= 900.dp  -> 640.dp            // normal laptop
+            else               -> screenW * 0.82f   // small tablet / narrow window
+        }
+
+        // Max height cap — only used to prevent overflow, terminal wraps content
+        val terminalMaxHeight = screenH * 0.85f
+
+        // Responsive internal spacing
+        val contentPadding = when {
+            isCompact          -> 14.dp
+            screenW >= 1200.dp -> 24.dp
+            else               -> 20.dp
+        }
+        val textSize = if (isCompact) 13.sp else 15.sp
+        val titleBarHeight = if (isCompact) 38.dp else 42.dp
+
+        // ── Terminal shell ───────────────────────────────────────────────
+        // wrapContentHeight → height is purely content-driven
+        // heightIn(max = ...) → scroll only if content exceeds cap
         Column(
             modifier = Modifier
-                .widthIn(max = 760.dp)
-                .fillMaxWidth(0.92f)
-                .height(560.dp)
+                .width(terminalWidth)
+                .wrapContentHeight()
+                .heightIn(max = terminalMaxHeight)
                 .clip(terminalShape)
                 .background(
                     Brush.verticalGradient(
@@ -63,16 +92,15 @@ fun TerminalSection(
                     shape = terminalShape
                 )
         ) {
-            // Title bar
+            // ── Title bar ────────────────────────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(42.dp)
+                    .height(titleBarHeight)
                     .background(Color.Black)
                     .padding(horizontal = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Window controls on the left
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -82,23 +110,27 @@ fun TerminalSection(
                     Box(Modifier.size(12.dp).background(Blue600, CircleShape))
                     Box(Modifier.size(12.dp).background(Pink600, CircleShape))
                 }
-                
-                // Title perfectly centered
+
                 Text("~/Portfolio", color = TextSecondary, fontWeight = FontWeight.W800)
             }
 
             HorizontalDivider(thickness = 1.dp, color = Color.White.copy(alpha = 0.25f))
 
-            // Content area
-            Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-                    .padding(22.dp)
+            // ── Content area — wraps to content, scrollable if overflows ─
+            androidx.compose.material3.ProvideTextStyle(
+                value = androidx.compose.ui.text.TextStyle(fontSize = textSize)
             ) {
-                IntroSequence(
-                    skipAnimation = skipAnimation,
-                    onReadyToShowNav = onFinished
-                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)   // take only as much as content needs
+                        .verticalScroll(scrollState)
+                        .padding(contentPadding)
+                ) {
+                    IntroSequence(
+                        skipAnimation = skipAnimation,
+                        onFinished = onFinished
+                    )
+                }
             }
         }
     }

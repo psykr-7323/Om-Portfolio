@@ -2,460 +2,501 @@ package org.psyduck.portfolio.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.browser.window
 import om_portfolio.shared.generated.resources.Res
 import om_portfolio.shared.generated.resources.om_avatar
 import org.jetbrains.compose.resources.painterResource
-import org.psyduck.portfolio.models.ProjectInfo
-import org.psyduck.portfolio.models.projects
-import org.psyduck.portfolio.theme.PortfolioColors.Blue400
-import org.psyduck.portfolio.theme.PortfolioColors.Border
-import org.psyduck.portfolio.theme.PortfolioColors.Pink500
+import org.psyduck.portfolio.data.ProjectInfo
+import org.psyduck.portfolio.data.contactLinks
+import org.psyduck.portfolio.data.hashtags
+import org.psyduck.portfolio.data.profileBio
+import org.psyduck.portfolio.data.profileTagline
+import org.psyduck.portfolio.data.skillBadges
+import org.psyduck.portfolio.data.projects.allProjects
 import org.psyduck.portfolio.theme.PortfolioColors.Purple500
 import org.psyduck.portfolio.theme.PortfolioColors.TextMuted
 import org.psyduck.portfolio.theme.PortfolioColors.TextPrimary
 import org.psyduck.portfolio.theme.PortfolioColors.TextSecondary
 
-// ── Skill Badge Data ─────────────────────────────────────────────────────────
-
-private data class SkillBadge(val label: String, val color: Color)
-
-private val skillBadges = listOf(
-    SkillBadge("Kotlin", Color(0xFF7F52FF)),      // Kotlin brand purple
-    SkillBadge("Ktor", Color(0xFFE97627)),         // Ktor orange
-    SkillBadge("Compose", Color(0xFF4DB33D)),       // Compose green
-    SkillBadge("ML", Color(0xFF3B82F6)),           // Blue
-    SkillBadge("Backend", Color(0xFFF59E0B)),       // Amber
-    SkillBadge("Android", Color(0xFF3DDC84)),       // Android green
-    SkillBadge("Firebase", Color(0xFFFFCA28)),       // Firebase yellow
-    SkillBadge("Python", Color(0xFF3776AB)),        // Python blue
-    SkillBadge("PostgreSQL", Color(0xFF336791))      // PostgreSQL slate
-)
-
-private val hashtags = listOf(
-    "#kotlin", "#android", "#compose", "#ktor", "#backend",
-    "#cleanarchitecture", "#websockets", "#5g", "#ml", "#jetpackcompose"
-)
-
-// ── Contact Link Data ────────────────────────────────────────────────────────
-
-private data class ContactLink(val label: String, val url: String, val color: Color)
-
-private val contactLinks = listOf(
-    ContactLink("GitHub", "https://github.com/psykr-7323", Color(0xFFE6EDF3)),
-    ContactLink("Email", "mailto:omanand1208@gmail.com", Color(0xFF22C55E)),
-    ContactLink("LinkedIn", "https://linkedin.com/in/om-anand", Color(0xFF0A66C2))
-)
-
-// ── Home Section ─────────────────────────────────────────────────────────────
-
 @Composable
-fun HomeSection(modifier: Modifier = Modifier) {
-    var selectedProjectIndex by remember { mutableStateOf(0) }
-    val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
+fun HomeSection(
+    modifier: Modifier = Modifier,
+    onOpenProject: (ProjectInfo) -> Unit = {}
+) {
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val isCompact = maxWidth < 600.dp
+        val horizontalPadding = if (isCompact) 16.dp else 32.dp
 
-    // Auto-scroll cards every 10 seconds, resets on manual interaction
-    LaunchedEffect(selectedProjectIndex) {
-        delay(10_000)
-        selectedProjectIndex = (selectedProjectIndex + 1) % projects.size
-    }
-
-    // Programmatically scroll the row to follow the selected card
-    LaunchedEffect(selectedProjectIndex) {
-        val cardWidthPx = 384 // ~360.dp card + 24.dp spacing in pixels (approximate)
-        val targetScroll = (selectedProjectIndex * cardWidthPx).coerceAtLeast(0)
-        scrollState.animateScrollTo(targetScroll)
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 48.dp, vertical = 32.dp)
-    ) {
-
-        // ── Avatar + Intro ───────────────────────────────────────────────────
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding, vertical = 20.dp)
         ) {
-            // Circular avatar
-            Image(
-                painter = painterResource(Res.drawable.om_avatar),
-                contentDescription = "Om Anand Avatar",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Purple500, CircleShape)
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(Color(0xFF0F1117))
+                .border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(28.dp))
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 22.dp)
+            ) {
+                // ── Avatar + Bio ────────────────────────────────────────────
+                if (isCompact) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(96.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, Purple500, CircleShape)
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.om_avatar),
+                                contentDescription = "Om Anand Avatar",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
 
-            Spacer(Modifier.width(28.dp))
+                        Spacer(Modifier.height(16.dp))
 
-            // Intro text
-            Column(modifier = Modifier.weight(1f)) {
-                // Tagline
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = profileTagline,
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.W800,
+                                color = TextPrimary,
+                                lineHeight = 24.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+
+                            Spacer(Modifier.height(10.dp))
+
+                            Text(
+                                text = profileBio,
+                                fontSize = 13.sp,
+                                color = TextSecondary,
+                                lineHeight = 19.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                    Box(
+                        modifier = Modifier
+                            .size(96.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, Purple500, CircleShape)
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.om_avatar),
+                            contentDescription = "Om Anand Avatar",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    Spacer(Modifier.width(20.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = profileTagline,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.W800,
+                            color = TextPrimary,
+                            lineHeight = 24.sp
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        Text(
+                            text = profileBio,
+                            fontSize = 13.sp,
+                            color = TextSecondary,
+                            lineHeight = 19.sp
+                        )
+                    }
+                }
+                }
+
+                Spacer(Modifier.height(18.dp))
+
+                // ── Contact links ───────────────────────────────────────────
                 Text(
-                    text = "Kotlin-first. Android-native. Backend-ready.",
+                    text = "You can find me on",
+                    fontSize = 12.sp,
+                    color = TextMuted
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    contactLinks.forEach { link ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(link.color.copy(alpha = 0.22f))
+                                .clickable { window.open(link.url, "_blank") }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "${link.label} \u2197",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W600,
+                                color = link.color
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(22.dp))
+
+                // ── Skills title + badges with icons ────────────────────────
+                Text(
+                    text = "Skills I have...",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.W800,
                     color = TextPrimary,
-                    lineHeight = 28.sp
+                    lineHeight = 26.sp
                 )
 
                 Spacer(Modifier.height(14.dp))
 
-                // Brief intro
-                Text(
-                    text = "I'm Om Anand — a Computer Science student at KIIT, Bhubaneswar, " +
-                            "building production-grade Android apps and backend systems with Kotlin.\n\n" +
-                            "I care about clean architecture, real-time systems, and solving " +
-                            "problems that matter — from mental wellness to 5G research.",
-                    fontSize = 14.sp,
-                    color = TextSecondary,
-                    lineHeight = 22.sp
-                )
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // ── Contact Links ────────────────────────────────────────────────────
-        Text(
-            text = "You can find me on",
-            fontSize = 13.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            contactLinks.forEach { link ->
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(link.color.copy(alpha = 0.12f))
-                        .border(1.dp, link.color.copy(alpha = 0.35f), RoundedCornerShape(20.dp))
-                        .clickable {
-                            kotlinx.browser.window.open(link.url, "_blank")
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    skillBadges.forEach { badge ->
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(badge.color.copy(alpha = 0.20f))
+                                .padding(start = 8.dp, end = 14.dp, top = 7.dp, bottom = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(badge.iconRes),
+                                contentDescription = badge.label,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                            )
+                            Text(
+                                text = badge.label,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W600,
+                                color = badge.color
+                            )
                         }
-                        .padding(horizontal = 18.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "${link.label} ↗",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.W600,
-                        color = link.color
-                    )
+                    }
                 }
+
+                Spacer(Modifier.height(12.dp))
+
+                // ── Hashtags ────────────────────────────────────────────────
+                Text(
+                    text = hashtags.joinToString("  "),
+                    fontSize = 12.sp,
+                    color = TextMuted,
+                    lineHeight = 18.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    color = Color.White.copy(alpha = 0.06f)
+                )
+
+                Spacer(Modifier.height(22.dp))
+
+                // ── Projects ────────────────────────────────────────────────
+                ProjectShowcaseHeader()
+
+                Spacer(Modifier.height(18.dp))
+
+                ProjectCarousel(onOpenProject = onOpenProject)
             }
         }
+    }
+    }
+}
 
-        Spacer(Modifier.height(28.dp))
-
-        // ── Skill Badges ─────────────────────────────────────────────────────
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            skillBadges.forEach { badge ->
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(badge.color.copy(alpha = 0.15f))
-                        .border(1.dp, badge.color.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = badge.label,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.W600,
-                        color = badge.color
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(18.dp))
-
-        // ── Hashtags ─────────────────────────────────────────────────────────
+@Composable
+private fun ProjectShowcaseHeader() {
+    Column {
         Text(
-            text = hashtags.joinToString("  "),
-            fontSize = 13.sp,
-            color = TextMuted,
-            lineHeight = 20.sp
+            text = "Projects I've built...",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.W800,
+            color = TextPrimary,
+            lineHeight = 38.sp
         )
+        Spacer(Modifier.height(6.dp))
+    }
+}
 
-        Spacer(Modifier.height(48.dp))
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ProjectCarousel(onOpenProject: (ProjectInfo) -> Unit) {
+    val projects = allProjects
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
 
-        // ── "Projects I Build" Heading ───────────────────────────────────────
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(1.dp)
-                    .background(Border)
-            )
-            Text(
-                text = "  Projects I Build  ",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W700,
-                color = TextPrimary
-            )
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(1.dp)
-                    .background(Border)
-            )
-        }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val containerWidth = maxWidth
+            val cardWidth = when {
+                containerWidth >= 1400.dp -> 280.dp
+                containerWidth >= 1120.dp -> 264.dp
+                containerWidth >= 820.dp -> 288.dp
+                else -> containerWidth - 32.dp
+            }
 
-        Spacer(Modifier.height(32.dp))
-
-        // ── Project Cards Slider with Arrows ─────────────────────────────────
-        Box(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Card slider Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(scrollState)
-                    .padding(horizontal = 40.dp), // leave room for arrows
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalAlignment = Alignment.CenterVertically
+            LazyRow(
+                state = listState,
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                flingBehavior = rememberSnapFlingBehavior(lazyListState = listState),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Leading spacer
-                Spacer(Modifier.width(24.dp))
-
-                projects.forEachIndexed { index, project ->
-                    val isFocused = index == selectedProjectIndex
-                    val scale by animateFloatAsState(
-                        targetValue = if (isFocused) 1f else 0.88f,
-                        animationSpec = tween(300),
-                        label = "cardScale"
-                    )
-                    val alpha by animateFloatAsState(
-                        targetValue = if (isFocused) 1f else 0.5f,
-                        animationSpec = tween(300),
-                        label = "cardAlpha"
-                    )
+                items(projects.size) { index ->
+                    val project = projects[index]
 
                     ProjectCard(
                         project = project,
-                        scale = scale,
-                        alpha = alpha,
-                        onClick = { selectedProjectIndex = index }
+                        isSelected = false,
+                        cardWidth = cardWidth,
+                        onSelect = { },
+                        onOpenGitHub = { window.open(project.githubUrl, "_blank") },
+                        onPreview = { onOpenProject(project) }
                     )
                 }
-
-                // Trailing spacer
-                Spacer(Modifier.width(24.dp))
             }
+        }
+    }
+}
 
-            // Left arrow
-            val canGoLeft = selectedProjectIndex > 0
+@Composable
+private fun ProjectCard(
+    project: ProjectInfo,
+    isSelected: Boolean,
+    cardWidth: androidx.compose.ui.unit.Dp,
+    onSelect: () -> Unit,
+    onPreview: () -> Unit,
+    onOpenGitHub: () -> Unit
+) {
+    val hoverSource = remember { MutableInteractionSource() }
+    val hoverState by hoverSource.collectIsHoveredAsState()
+    val elevated = hoverState || isSelected
+    val alpha by animateFloatAsState(
+        targetValue = if (elevated) 1f else 0.74f,
+        animationSpec = tween(180),
+        label = "projectCardAlpha"
+    )
+
+    Column(
+            modifier = Modifier
+                .width(cardWidth)
+            .clip(RoundedCornerShape(22.dp))
+            .background(Color(0xFF17181D).copy(alpha = alpha))
+            .border(
+                width = 1.dp,
+                color = if (isSelected) Color.White.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.10f),
+                shape = RoundedCornerShape(22.dp)
+            )
+            .hoverable(hoverSource)
+            .clickable { onSelect() }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(152.dp)
+                .background(
+                    Brush.linearGradient(
+                        colors = project.thumbnailColors
+                    )
+                )
+        ) {
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF1E2128).copy(alpha = if (canGoLeft) 0.9f else 0.3f))
-                    .border(1.dp, Color.White.copy(alpha = if (canGoLeft) 0.2f else 0.06f), CircleShape)
-                    .clickable(enabled = canGoLeft) {
-                        selectedProjectIndex = (selectedProjectIndex - 1).coerceAtLeast(0)
-                    },
-                contentAlignment = Alignment.Center
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.Black.copy(alpha = 0.24f))
+                    .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(999.dp))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = "◀",
-                    fontSize = 18.sp,
-                    color = if (canGoLeft) TextPrimary else TextMuted.copy(alpha = 0.3f)
+                    text = project.status.label,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.W700,
+                    color = Color.White
                 )
             }
 
-            // Right arrow
-            val canGoRight = selectedProjectIndex < projects.lastIndex
-            Box(
+            Column(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF1E2128).copy(alpha = if (canGoRight) 0.9f else 0.3f))
-                    .border(1.dp, Color.White.copy(alpha = if (canGoRight) 0.2f else 0.06f), CircleShape)
-                    .clickable(enabled = canGoRight) {
-                        selectedProjectIndex = (selectedProjectIndex + 1).coerceAtMost(projects.lastIndex)
-                    },
-                contentAlignment = Alignment.Center
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
             ) {
                 Text(
-                    text = "▶",
-                    fontSize = 18.sp,
-                    color = if (canGoRight) TextPrimary else TextMuted.copy(alpha = 0.3f)
+                    text = project.highlight,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W700,
+                    color = Color.White,
+                    lineHeight = 20.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(Modifier.height(2.dp))
+
+                Text(
+                    text = project.slug.replace('-', ' ').uppercase(),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.W600,
+                    color = Color.White.copy(alpha = 0.72f)
+                )
+            }
+
+            Text(
+                text = project.name.first().toString(),
+                fontSize = 64.sp,
+                fontWeight = FontWeight.W800,
+                color = Color.White.copy(alpha = 0.16f),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 18.dp)
+            )
+        }
+
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Text(
+                text = project.name,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.W700,
+                color = TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = project.description,
+                fontSize = 13.sp,
+                color = TextSecondary,
+                lineHeight = 19.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.heightIn(min = 60.dp)
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ShowcaseButton(
+                    label = "More",
+                    accent = Color.White,
+                    filled = true,
+                    onClick = onPreview
+                )
+
+                ShowcaseButton(
+                    label = "GitHub",
+                    accent = TextPrimary,
+                    filled = false,
+                    onClick = onOpenGitHub
                 )
             }
         }
     }
 }
 
-// ── Project Card ─────────────────────────────────────────────────────────────
-
 @Composable
-private fun ProjectCard(
-    project: ProjectInfo,
-    scale: Float,
-    alpha: Float,
+private fun ShowcaseButton(
+    label: String,
+    accent: Color,
+    filled: Boolean,
     onClick: () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(16.dp)
-
-    Column(
+    Box(
         modifier = Modifier
-            .scale(scale)
-            .width(360.dp)
-            .clip(cardShape)
-            .background(Color(0xFF1E2128).copy(alpha = alpha))
-            .border(1.dp, Color.White.copy(alpha = 0.08f * alpha), cardShape)
+            .clip(RoundedCornerShape(999.dp))
+            .background(if (filled) accent.copy(alpha = 0.95f) else Color.Transparent)
+            .border(
+                1.dp,
+                if (filled) Color.Transparent else accent.copy(alpha = 0.18f),
+                RoundedCornerShape(999.dp)
+            )
             .clickable { onClick() }
+            .padding(horizontal = 18.dp, vertical = 10.dp)
     ) {
-        // Top section: Gradient cover
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            Purple500.copy(alpha = 0.8f * alpha),
-                            Blue400.copy(alpha = 0.6f * alpha),
-                            Pink500.copy(alpha = 0.7f * alpha)
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = project.name.first().toString(),
-                fontSize = 64.sp,
-                fontWeight = FontWeight.W800,
-                color = Color.White.copy(alpha = 0.7f * alpha)
-            )
-        }
-
-        // Bottom section: Content
-        Column(
-            modifier = Modifier.padding(24.dp)
-        ) {
-            // Status row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(modifier = Modifier.size(8.dp).background(project.status.color.copy(alpha = alpha), CircleShape))
-                Text(
-                    text = project.status.label,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.W600,
-                    color = project.status.color.copy(alpha = alpha)
-                )
-            }
-
-            Spacer(Modifier.height(14.dp))
-
-            // Title
-            Text(
-                text = project.name,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.W700,
-                color = TextPrimary.copy(alpha = alpha),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            // Description
-            Text(
-                text = project.description,
-                fontSize = 14.sp,
-                color = TextSecondary.copy(alpha = alpha),
-                lineHeight = 22.sp,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.height(72.dp) // Fixed height to keep cards uniform
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            // Buttons row
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // More button
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    Purple500.copy(alpha = 0.25f * alpha),
-                                    Blue400.copy(alpha = 0.20f * alpha)
-                                )
-                            )
-                        )
-                        .border(1.dp, Purple500.copy(alpha = 0.4f * alpha), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = "More",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.W600,
-                        color = TextPrimary.copy(alpha = alpha)
-                    )
-                }
-
-                // GitHub button
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.08f * alpha))
-                        .border(1.dp, Color.White.copy(alpha = 0.2f * alpha), RoundedCornerShape(8.dp))
-                        .clickable(enabled = alpha == 1f) {
-                            kotlinx.browser.window.open(project.githubUrl, "_blank")
-                        }
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = "GitHub",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.W600,
-                        color = TextPrimary.copy(alpha = alpha)
-                    )
-                }
-            }
-        }
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.W700,
+            color = if (filled) Color(0xFF111114) else accent
+        )
     }
 }

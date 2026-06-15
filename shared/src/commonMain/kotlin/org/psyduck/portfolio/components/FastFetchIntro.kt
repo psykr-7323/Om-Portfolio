@@ -1,7 +1,6 @@
 package org.psyduck.portfolio.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,10 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import org.psyduck.portfolio.models.terminalInfo
+import org.psyduck.portfolio.data.terminalInfo
 import org.psyduck.portfolio.theme.PortfolioColors.Blue400
-import org.psyduck.portfolio.theme.PortfolioColors.Border
-import org.psyduck.portfolio.theme.PortfolioColors.Success
 import org.psyduck.portfolio.theme.rememberJetBrainsMono
 
 // Fires once every row has appeared so IntroSequence can advance to stage 3.
@@ -31,19 +28,20 @@ fun FastfetchSection(
             onFinished()
         } else {
             terminalInfo.forEachIndexed { index, _ ->
-                kotlinx.coroutines.delay(180)   // slightly faster stagger
+                kotlinx.coroutines.delay(180)
                 visibleItems = index + 1
             }
             onFinished()
         }
     }
 
-    // ── Full-width info column (DotLogo removed) ─────────────────────────────
-    Column(modifier = Modifier.fillMaxWidth()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val isCompact = maxWidth < 400.dp
+        val labelWidth = if (isCompact) 84.dp else 110.dp
 
-        Spacer(Modifier.height(12.dp))
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(Modifier.height(6.dp))
 
-        // Staggered rows
         repeat(visibleItems) { index ->
             val item = terminalInfo[index]
 
@@ -51,14 +49,12 @@ fun FastfetchSection(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
             ) {
-                // KEY — Blue
                 Text(
                     text = "${item.label}:",
                     color = Blue400,
                     fontFamily = mono,
-                    modifier = Modifier.width(110.dp)
+                    modifier = Modifier.width(labelWidth)
                 )
-                // VALUE — White
                 Text(
                     text = item.value,
                     color = Color.White,
@@ -69,8 +65,9 @@ fun FastfetchSection(
                 )
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(if (isCompact) 4.dp else 8.dp))
         }
 
     }
+}
 }

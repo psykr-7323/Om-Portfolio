@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun IntroSequence(
     skipAnimation: Boolean = false,
-    onReadyToShowNav: () -> Unit = {}
+    onFinished: () -> Unit = {}
 ) {
 
     var stage by remember { mutableStateOf(if (skipAnimation) 3 else 0) }
@@ -37,7 +37,7 @@ fun IntroSequence(
             // Stage 3 triggered by FastfetchSection.onFinished callback
         } else if (skipAnimation) {
             stage = 3
-            onReadyToShowNav()
+            onFinished()
         }
     }
 
@@ -60,7 +60,7 @@ fun IntroSequence(
             )
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
 
         if (stage >= 1) {
             Text(
@@ -68,7 +68,7 @@ fun IntroSequence(
                 color = Color.White,
                 fontFamily = mono
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
         }
 
         // ── Stage 2 / 3: fastfetch ────────────────────────────────────────────
@@ -85,13 +85,13 @@ fun IntroSequence(
                     showCursor = stage == 2
                 )
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
 
             FastfetchSection(
                 skipAnimation = skipAnimation,
                 onFinished = {
                     stage = 3
-                    onReadyToShowNav()
+                    onFinished()
                 }
             )
         }
